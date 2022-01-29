@@ -32,10 +32,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtRequestFilter jwtRequestFilter;
     private final ObjectMapper mapper;
 
-    // TODO - setting this to autowire breaks due to circular bean dependencies,
-    //  without autowired it seems fine, but not sure that it's getting configured properly then
-//    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .userDetailsService(jwtUserDetailsService)
                 .passwordEncoder(passwordEncoder());
