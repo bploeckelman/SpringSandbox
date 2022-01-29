@@ -86,7 +86,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     var status = HttpStatus.UNAUTHORIZED.value();
                     var error = HttpStatus.UNAUTHORIZED.getReasonPhrase();
                     var message = String.format("%d %s", status, error);
-                    var path = request.getPathInfo();
+                    var path = request.getServletPath();
                     var err = new Error(timestamp, status, error, message, path);
                     var body = mapper.writeValueAsString(err);
                     response.getWriter().write(body);
