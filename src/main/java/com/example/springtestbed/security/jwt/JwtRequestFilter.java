@@ -52,7 +52,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 log.warn("JWT token does not begin with '" + bearer + "'");
             }
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            var securityContext = SecurityContextHolder.getContext();
+            if (username != null && securityContext.getAuthentication() == null) {
                 var userDetails = jwtUserDetailsService.loadUserByUsername(username);
 
                 // manually set auth if token is valid
@@ -63,7 +64,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
                     // after setting the auth in the context, specify that the current user is auth'd
                     // in order to pass spring security configuration
-                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthToken);
+                    securityContext.setAuthentication(usernamePasswordAuthToken);
                 }
             }
         }

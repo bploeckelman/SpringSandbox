@@ -22,6 +22,7 @@ public class JwtUtil {
      * https://github.com/jwtk/jjwt
      * https://www.baeldung.com/java-json-web-tokens-jjwt
      * https://www.viralpatel.net/java-create-validate-jwt-token/
+     * jwt auth flow: https://www.javainuse.com/spring/boot-jwt
      */
 
     private static final long JWT_LIFETIME_HOURS   = 24;
