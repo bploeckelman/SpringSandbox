@@ -1,4 +1,4 @@
-package com.example.springtestbed;
+package com.example.springtestbed.security;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;

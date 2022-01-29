@@ -1,4 +1,4 @@
-package com.example.springtestbed;
+package com.example.springtestbed.security;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
