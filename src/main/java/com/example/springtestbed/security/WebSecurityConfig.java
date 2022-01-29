@@ -56,13 +56,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             // csrf not needed
             .csrf()
                 .disable()
-                // TODO - review these next two options
-//                .headers()
-//                .frameOptions().disable()
+                .headers()
+                .frameOptions().disable() // required for h2 web console
             // specify paths that require auth and those that don't
+            .and()
             .authorizeRequests()
                 .antMatchers("/").anonymous()
-                .antMatchers("/authenticate").anonymous()
+                .antMatchers("/login").anonymous()
+                .antMatchers("/h2-console/**").anonymous() // TODO - temporary
                 .antMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
             // use a stateless session, so session won't be used to store user state

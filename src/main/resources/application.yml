@@ -8,3 +8,11 @@ spring:
       enabled: true
   datasource:
     url: jdbc:h2:mem:testdb
+  jpa:
+    # by default data.sql scripts are run before hibernate is initialized
+    # which matches the behavior of migration tools like flyway.
+    # in order to populate schemas created by hibernate, this flag must be true
+    # could also rename it to 'import.sql'
+    # https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.data-initialization
+    defer-datasource-initialization: true
+    generate-ddl: true
