@@ -1,5 +1,6 @@
 package com.example.springtestbed.security;
 
+import com.example.springtestbed.security.jwt.JwtRequestFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

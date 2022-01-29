@@ -1,9 +1,8 @@
-package com.example.springtestbed.security;
+package com.example.springtestbed.security.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -82,8 +81,13 @@ public class JwtUtil {
 
     private Claims getAllClaimsFromToken(String token) {
         var parser = Jwts.parserBuilder().setSigningKey(key).build();
-        // TODO: catch possible exceptions, such as SignatureException
-        return parser.parseClaimsJws(token).getBody();
+        try {
+            var claims = parser.parseClaimsJws(token);
+            return claims.getBody();
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
+            // TODO - handle exceptions differently instead of rethrowing?
+            throw new JwtException("Cannot extract claims from token", e);
+        }
     }
 
     private boolean isNotExpired(String token) {
