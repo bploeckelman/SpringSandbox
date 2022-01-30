@@ -61,9 +61,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             // specify paths that require auth and those that don't
             .and()
             .authorizeRequests()
-                .antMatchers("/").anonymous()
+                // static and template resources are accessible by default
+                .antMatchers("/**").anonymous()
+                // login endpoint is accessible by default
                 .antMatchers("/login").anonymous()
-                .antMatchers("/h2-console/**").anonymous() // TODO - temporary
+                // h2 in-mem database web console accessible by default TODO - temporary
+                .antMatchers("/h2-console/**").anonymous()
+                // api calls and other requests require authentication
                 .antMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
             // use a stateless session, so session won't be used to store user state
