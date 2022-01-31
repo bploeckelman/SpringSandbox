@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -51,6 +52,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
+    public void configure(WebSecurity web) {
+        // static and template resources are accessible by default
+        web.ignoring().antMatchers(
+                "/favicon.ico",
+                "/js/**",
+                "/css/**",
+                "/images/**"
+        );
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
             // csrf not needed
@@ -61,10 +73,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             // specify paths that require auth and those that don't
             .and()
             .authorizeRequests()
-                // static and template resources are accessible by default
-                .antMatchers("/**").anonymous()
-                // login endpoint is accessible by default
-                .antMatchers("/login").anonymous()
+                .antMatchers("/", "/login").anonymous()
                 // h2 in-mem database web console accessible by default TODO - temporary
                 .antMatchers("/h2-console/**").anonymous()
                 // api calls and other requests require authentication
