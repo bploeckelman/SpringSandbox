@@ -1,24 +1,17 @@
-const origin = 'http://localhost:8080';
-const paths = {
-    login: '/login',
-    api: '/api/v1'
+import * as constants from './shared.js';
+import { $ } from './shared.js';
+
+let auth_token = localStorage.getItem(constants.auth_token_key);
+
+window.onload = () => {
+    // TODO - check auth_token and redirect to profile page if it's valid
+    //   otherwise display the login page content
+    displayLoginPrompt();
 };
 
-const $ = (selector) => document.querySelector(selector);
-const $all = (selector) => document.querySelectorAll(selector);
+// ------------------------------------------------------------------
 
 const displayLoginPrompt = () => {
-    class LoginError {
-        // TODO - is there an nicer way to set a bunch of members based on the input json object?
-        constructor(error) {
-            this.timestamp = error.timestamp;
-            this.status = error.status;
-            this.error = error.error;
-            this.message = error.message;
-            this.path = error.path;
-        }
-    }
-
     let content = $('#content');
     content.innerHTML = '';
 
@@ -50,13 +43,16 @@ const displayLoginPrompt = () => {
     loginButton.name = 'login';
     loginButton.textContent = 'Login';
 
+    loginForm.append(usernameInput, passwordInput, loginButton);
+    content.append(loginForm, document.createElement('br'), loginResultDiv);
+
     loginForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        fetch(origin + paths.login, {
+        fetch(constants.paths.login, {
             method: 'POST',
             headers: {
-                'accepts': 'application/json',
-                'content-type': 'application/json'
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 'username': usernameInput.value,
@@ -65,35 +61,29 @@ const displayLoginPrompt = () => {
         })
             .then(response => response.json())
             .then(json => {
-                console.trace('fetch().then(response).then(json): ', json);
-
-                // check for errors and 'handle' them
+                console.debug('Login response: ', json);
                 if (json.error) {
-                    throw new LoginError(json);
+                    throw LoginError.from(json);
                 }
+                loginResultDiv.textContent = 'Login successful';
+                auth_token = json.token;
+                localStorage.setItem(constants.auth_token_key, auth_token);
 
-                // TODO - make api request for greeting and insert it into the page
-                // TODO - wire up future fetch calls to the api to automatically insert the authorization header with this token
-                loginResultDiv.textContent = 'Login successful, token: ' + json.token;
+                // redirect to profile page
+                window.location.replace(constants.paths.profile);
             })
             .catch(error => {
                 console.error(error);
-                loginResultDiv.textContent = 'Login failed: ' + error.message;
+                localStorage.removeItem(constants.auth_token_key);
+                loginResultDiv.textContent = `Login failed: ${error.message}`;
+                auth_token = '';
             })
         ;
     });
 
-    loginForm.appendChild(usernameInput);
-    loginForm.appendChild(passwordInput);
-    loginForm.appendChild(loginButton);
-
-    content.appendChild(loginForm);
-    content.appendChild(document.createElement('br'));
-    content.appendChild(loginResultDiv);
+    class LoginError {
+        static from(json) {
+            return Object.assign(new LoginError(), json);
+        }
+    }
 }
-
-// ------------------------------------------------------------------
-
-window.onload = () => {
-    displayLoginPrompt();
-};

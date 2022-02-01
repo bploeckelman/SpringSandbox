@@ -1,5 +1,6 @@
 package com.example.springtestbed.security.jwt;
 
+import com.example.springtestbed.users.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,12 +20,12 @@ import java.io.IOException;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final JwtUserDetailsService jwtUserDetailsService;
+    private final UserService userService;
 
     public JwtRequestFilter(JwtUtil jwtUtil,
-                            JwtUserDetailsService jwtUserDetailsService) {
+                            UserService userService) {
         this.jwtUtil = jwtUtil;
-        this.jwtUserDetailsService = jwtUserDetailsService;
+        this.userService = userService;
     }
 
     @Override
@@ -54,7 +55,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             var securityContext = SecurityContextHolder.getContext();
             if (username != null && securityContext.getAuthentication() == null) {
-                var userDetails = jwtUserDetailsService.loadUserByUsername(username);
+                var userDetails = userService.loadUserByUsername(username);
 
                 // manually set auth if token is valid
                 if (jwtUtil.validateToken(token, userDetails)) {

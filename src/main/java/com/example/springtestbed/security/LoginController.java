@@ -1,7 +1,7 @@
 package com.example.springtestbed.security;
 
-import com.example.springtestbed.security.jwt.JwtUserDetailsService;
 import com.example.springtestbed.security.jwt.JwtUtil;
+import com.example.springtestbed.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,11 +19,11 @@ import java.util.Objects;
 public class LoginController {
 
     private final JwtUtil jwtUtil;
-    private final JwtUserDetailsService jwtUserDetailsService;
+    private final UserService userService;
     private final AuthenticationManager authenticationManager;
 
-    record LoginRequest(String username, String password) {}
-    record LoginResponse(String token) {}
+    private record LoginRequest(String username, String password) {}
+    private record LoginResponse(String token) {}
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
@@ -35,7 +35,7 @@ public class LoginController {
         var authentication = new UsernamePasswordAuthenticationToken(username, password);
         authenticationManager.authenticate(authentication);
 
-        var userDetails = jwtUserDetailsService.loadUserByUsername(username);
+        var userDetails = userService.loadUserByUsername(username);
         var token = jwtUtil.generateToken(userDetails);
         return ResponseEntity.ok(new LoginResponse(token));
     }
