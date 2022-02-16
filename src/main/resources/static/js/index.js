@@ -46,9 +46,9 @@ const displayLoginPrompt = () => {
     loginForm.append(usernameInput, passwordInput, loginButton);
     content.append(loginForm, document.createElement('br'), loginResultDiv);
 
-    loginForm.addEventListener('submit', (event) => {
+    loginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        fetch(constants.paths.login, {
+        let response = await fetch(constants.paths.login, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -58,32 +58,29 @@ const displayLoginPrompt = () => {
                 'username': usernameInput.value,
                 'password': passwordInput.value
             })
-        })
-            .then(response => response.json())
-            .then(json => {
-                console.debug('Login response: ', json);
-                if (json.error) {
-                    throw LoginError.from(json);
-                }
-                loginResultDiv.textContent = 'Login successful';
-                auth_token = json.token;
-                localStorage.setItem(constants.auth_token_key, auth_token);
+        });
 
-                // redirect to profile page
-                window.location.replace(constants.paths.profile);
-            })
-            .catch(error => {
-                console.error(error);
-                localStorage.removeItem(constants.auth_token_key);
-                loginResultDiv.textContent = `Login failed: ${error.message}`;
-                auth_token = '';
-            })
-        ;
+        let tokenJson = await response.json();
+        console.debug('Login response: ', tokenJson);
+        if (tokenJson.error) {
+            console.error(new LoginError(tokenJson));
+            loginResultDiv.textContent = `Login failed: ${tokenJson.message}`;
+            // clear the auth token
+            localStorage.removeItem(constants.auth_token_key);
+            auth_token = '';
+        } else {
+            loginResultDiv.textContent = 'Login successful';
+            // store the auth token
+            auth_token = tokenJson.token;
+            localStorage.setItem(constants.auth_token_key, auth_token);
+            // redirect to profile page
+            window.location = constants.paths.profile;
+        }
     });
 
     class LoginError {
-        static from(json) {
-            return Object.assign(new LoginError(), json);
+        constructor(options = {}) {
+            Object.assign(this, options);
         }
     }
 }

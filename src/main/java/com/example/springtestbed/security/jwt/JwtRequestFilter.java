@@ -2,6 +2,7 @@ package com.example.springtestbed.security.jwt;
 
 import com.example.springtestbed.users.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,13 +45,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 try {
                     username = jwtUtil.getUsernameFromToken(token);
                 } catch (IllegalArgumentException e) {
-                    log.error("Unable to get JWT token", e);
+                    log.error("Unable to get auth token", e);
                 } catch (ExpiredJwtException e) {
-                    log.warn("JWT token has expired", e);
+                    log.warn("Auth token has expired", e);
+                } catch (JwtException e) {
+                    log.warn("Failed to process auth token: {}", e.getMessage());
                 }
             } else {
                 // TODO - this should technically throw some sort of exception so the client gets an unauth'd response, but that doesn't happen right now
-                log.warn("JWT token does not begin with '" + bearer + "'");
+                log.warn("Authorization header value does not begin with '" + bearer + "'");
             }
 
             var securityContext = SecurityContextHolder.getContext();

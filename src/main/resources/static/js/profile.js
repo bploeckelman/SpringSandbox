@@ -1,4 +1,4 @@
-import * as shared from "./shared.js";
+import * as constants from "./shared.js";
 import { $ } from './shared.js';
 
 let auth_token = '';
@@ -19,36 +19,34 @@ window.onload = async () => {
 // ------------------------------------------------------------------
 
 const loadAuth = async () => {
-    auth_token = localStorage.getItem(shared.auth_token_key);
+    auth_token = localStorage.getItem(constants.auth_token_key);
     let tokenExists = (typeof(auth_token) === 'string' && auth_token !== '');
     let hasUserInfo = await fetchUserInfo();
     return (tokenExists && hasUserInfo);
 }
 
 const fetchUserInfo = async () => {
-    return fetch(shared.paths.user_profile, {
+    let response = await fetch(constants.paths.user_profile, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${auth_token}`,
             'Accept': 'application/json'
         }
-    })
-        .then(response => response.json())
-        .then(userJson => {
-            console.debug('User info response:', userJson);
-            if ('error' in userJson) {
-                throw new Error(`Failed to fetch user details, response: ${JSON.stringify(userJson)}`);
-            }
-            user_info = userJson;
-            return true;
-        })
-        .catch(error => {
-            console.error(error);
-            return false;
-        });
+    });
+
+    let user = await response.json();
+    console.debug('User info response:', user);
+
+    if ('error' in user) {
+        console.error(new Error(`Failed to fetch user details, response: ${JSON.stringify(user)}`));
+        return false;
+    }
+
+    user_info = user;
+    return true;
 }
 
-const displayProfile = () => {
+const displayProfile = async () => {
     $('#logout_button').onclick = logout;
 
     let content = $('#content');
@@ -79,30 +77,28 @@ const displayProfile = () => {
 
     content.append(greetingP, userInfoDiv);
 
-    fetch(shared.paths.greeting, {
+    let response = await fetch(constants.paths.greeting, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${auth_token}`,
             'Accept': 'text/plain'
         }
-    })
-        .then(response => response.text())
-        .then(data => {
-            // TODO - this probably isn't the best way to check for error responses
-            //   but it's kind of contrived anyway since the api won't return plain text responses
-            if (shared.isJsonString(data)) {
-                let json = JSON.parse(data);
-                if ('error' in json) {
-                    throw new Error(json);
-                }
-            }
-            greetingP.textContent = data;
-        })
-        .catch(console.error);
+    });
+
+    let greeting = await response.text();
+    // TODO - this probably isn't the best way to check for error responses
+    //   but it's kind of contrived anyway since the api won't return plain text responses
+    if (constants.isJsonString(greeting)) {
+        let json = JSON.parse(greeting);
+        if ('error' in json) {
+            console.error(new Error(`Failed to fetch greeting, response: ${JSON.stringify(json)}`));
+        }
+    }
+    greetingP.textContent = greeting;
 }
 
 const logout = () => {
     console.log(`Logging out, redirecting to homepage`);
-    localStorage.removeItem(shared.auth_token_key);
+    localStorage.removeItem(constants.auth_token_key);
     window.location = '/';
 }
