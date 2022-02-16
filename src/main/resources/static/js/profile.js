@@ -1,16 +1,17 @@
 import * as constants from "./shared.js";
-import { $ } from './shared.js';
+import {$} from "./shared.js";
 
 let auth_token = '';
 let user_info = {};
 
 window.onload = async () => {
-    loadAuth().then(isAuthenticated => {
-        if (isAuthenticated) {
-            console.log('Authentication token found, displaying profile');
+    loadAuth().then(authState => {
+        console.log(authState.message);
+
+        if (authState.isAuthorized) {
             displayProfile();
         } else {
-            console.log('No authentication token available, redirecting to login page');
+            alert(authState.message);
             window.location = '/';
         }
     });
@@ -22,7 +23,14 @@ const loadAuth = async () => {
     auth_token = localStorage.getItem(constants.auth_token_key);
     let tokenExists = (typeof(auth_token) === 'string' && auth_token !== '');
     let hasUserInfo = await fetchUserInfo();
-    return (tokenExists && hasUserInfo);
+    let isAuthorized = (tokenExists && hasUserInfo);
+    let authMessage = isAuthorized
+                    ? 'User authorized, displaying profile'
+                    : 'Unauthorized, redirecting to home...'
+    return {
+        isAuthorized: isAuthorized,
+        message: authMessage
+    };
 }
 
 const fetchUserInfo = async () => {
